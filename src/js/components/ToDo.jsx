@@ -2,6 +2,7 @@ import { useEffect, useState } from "react"
 
 function ToDo() {
     const [list, setList] = useState([])
+    const [input, setInput] = useState("")
 
     async function getData() {
 
@@ -15,77 +16,85 @@ function ToDo() {
     }
 
     async function postTask(event) {
-		event.preventDefault()
+        event.preventDefault()
 
-		const newTask = {
-			"label": input,
-			"is_done": false
-		}
+        const newTask = {
+            "label": input,
+            "is_done": false
+        }
 
-        await fetch("https://playground.4geeks.com/todo/users/marin", {
-			method: "POST", 
-			body: JSON.stringify(newTask), 
-			headers: { "Content-type": "application/json" } 
-		})
+        await fetch("https://playground.4geeks.com/todo/todos/marin", {
+            method: "POST",
+            body: JSON.stringify(newTask),
+            headers: { "Content-type": "application/json" }
+        })
 
-    getData()
+        setInput("")
 
-	}
+        getData()
+
+    }
 
     async function putTask(element) {
         let task = {
             "label": element.label,
             "is_done": true
         }
-        await fetch(`https://playground.4geeks.com/todo/users/marin${element.id}`, {
+        await fetch(`https://playground.4geeks.com/todo/todos/users/marin${element.id}`, {
             method: "PUT",
             body: JSON.stringify(task),
             headers: { "Content-type": "application/json" }
         })
-    getData()
+        getData()
 
     }
 
 
     async function deleteTask(id) {
-        await fetch(`https://playground.4geeks.com/todo/users/marin${id}`, {
+        await fetch(`https://playground.4geeks.com/todo/todos/${id}`, {
             method: "DELETE",
         })
-
+        getData()
     }
 
-    useEffect(()=> {   //Muestra las tareas en cada recarga sin necesidad del button
+    useEffect(() => {   //Muestra las tareas en cada recarga sin necesidad del button
         getData()
     }, [])
 
-    console.log(list)
+
 
     return (
 
         <div className="text-center">
 
+            <form onSubmit={(e) => postTask(e)}>
+                <input
+                    type="text"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    placeholder="Preparar la comida">
+                </input>
 
-            <button onClick={() => (getData())}>
-                Traer la info
-            </button>
+                <button type="submit">Añadir Tasks </button>
+
+            </form>
+
+            <div className="text-center">
             {
-                list.map((e, i) => {
+                list.map((task) => {
                     return (
-                        <li key={i}>
-                            {e.label}
-                            <input 
-                        type="text"
-                        value={list}
-                        onChange={(e) => setInput(e.target.value)} 
-                        placeholder="Preparar la comida">
-                        </input>
-                            <button type="button" onClick={() => (deleteTask(e.id))}>X</button>
-                        </li>
+                      <span onClick={() =>(e)}>
 
+                        <li key={task.id}>
+                            {task.label}
+                            <button type="button" onClick={() => deleteTask(task.id)}> X </button>
+                        </li>
+                       </span>
                     )
                 })
 
             }
+            </div>
 
         </div>
 
