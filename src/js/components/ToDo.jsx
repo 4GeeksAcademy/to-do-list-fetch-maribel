@@ -2,24 +2,30 @@ import { useEffect, useState } from "react"
 
 function ToDo() {
     const [list, setList] = useState([])
-    const [input, setInput] = useState("")
+    const [taskTitle, setTaskTitle] = useState("")
 
     async function getData() {
 
         try {
             let response = await fetch("https://playground.4geeks.com/todo/users/marin")
-            let data = await response.json()
-            setList(data.todos)
+            console.log(response)
+            if (response.status >= 200 && response.status < 400) {
+                let data = await response.json()
+                setList(data.todos)
+            } else {
+                console.log(`Error llamando a playground.4geeks.com - error ${response.status}`)
+            }
+
         } catch (error) {
             console.log(error)
         }
     }
 
-    async function postTask(event) {
+    async function createTask(event) {
         event.preventDefault()
 
         const newTask = {
-            "label": input,
+            "label": taskTitle,
             "is_done": false
         }
 
@@ -29,18 +35,18 @@ function ToDo() {
             headers: { "Content-type": "application/json" }
         })
 
-        setInput("")
+        setTaskTitle("")
 
         getData()
 
     }
 
-    async function putTask(element) {
+    async function updateTask(element) {
         let task = {
             "label": element.label,
             "is_done": true
         }
-        await fetch(`https://playground.4geeks.com/todo/todos/users/marin${element.id}`, {
+        await fetch(`https://playground.4geeks.com/todo/todos/users/marin/${element.id}`, {
             method: "PUT",
             body: JSON.stringify(task),
             headers: { "Content-type": "application/json" }
@@ -67,11 +73,11 @@ function ToDo() {
 
         <div className="text-center">
 
-            <form onSubmit={(e) => postTask(e)}>
+            <form onSubmit={(e) => createTask(e)}>
                 <input
                     type="text"
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
+                    value={taskTitle}
+                    onChange={(e) => setTaskTitle(e.target.value)}
                     placeholder="Preparar la comida">
                 </input>
 
@@ -80,27 +86,23 @@ function ToDo() {
             </form>
 
             <div className="text-center">
-            {
-                list.map((task) => {
-                    return (
-                      <span onClick={() =>(e)}>
+                {
+                    list.map((task, i) => {
+                        return (
+                            <span key={i} onClick={() => (e)}>
+                                <li >
+                                    {task.label}
+                                    <button type="button" onClick={() => deleteTask(task.id)}> X </button>
+                                </li>
+                            </span>
+                        )
+                    })
+                }
 
-                        <li key={task.id}>
-                            {task.label}
-                            <button type="button" onClick={() => deleteTask(task.id)}> X </button>
-                        </li>
-                       </span>
-                    )
-                })
-
-            }
             </div>
 
         </div>
-
-
     )
-
 }
 
 export default ToDo
